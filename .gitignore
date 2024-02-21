@@ -1,0 +1,5 @@
+.idea/
+target/
+result/
+*.iml
+meta.yaml
