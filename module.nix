@@ -1,13 +1,13 @@
 { config, pkgs, lib, ... }:
 
 let
-  cfg = config.services.sflow_exporter;
+  cfg = config.services.sflow-exporter;
 in
 {
   options.services.sflow-exporter = {
     package = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.sflow_exporter;
+      default = pkgs.sflow-exporter;
       defaultText = lib.literalExpression "pkgs.sflow-exporter";
       description = lib.mdDoc "Which sflow_exporzer derivation to use.";
     };
@@ -46,7 +46,6 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.listen.sflow.port ];
 
     systemd.services.sflow-exporter = {
       description = "sflow_exporter";
@@ -55,7 +54,7 @@ in
       after = [ "network.target" ];
 
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/sflow_exporter";
+        ExecStart = "${cfg.package}/bin/sflow_exporter listen";
         DynamicUser = true;
         User = "sflow_exporter";
 
@@ -67,7 +66,7 @@ in
           [
             "SFLOW_EXPORTER_SFlOW_LISTEN_ADDR=${if (lib.hasInfix ":" sflowAddr) then "[${sflowAddr}]" else sflowAddr}:${toString cfg.listen.sflow.port}"
             "SFLOW_EXPORTER_METRICS_LISTEN_ADDR=${if (lib.hasInfix ":" metricsAddr) then "[${metricsAddr}]" else metricsAddr}:${toString cfg.listen.metrics.port}"
-            "SFLOW_EXPORTER_META=${cfg.jitsiUrl}"
+            "SFLOW_EXPORTER_META=${cfg.metaPath}"
           ];
       };
     };
