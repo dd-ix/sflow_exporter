@@ -1,0 +1,30 @@
+[package]
+name = "sflow_exporter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.4", default-features = false, features = ["std", "color", "help", "usage", "error-context", "suggestions", "derive", "env"] }
+tokio = { version = "1.36", default-features = false, features = ["macros", "rt-multi-thread", "net", "signal", "fs", "sync"] }
+tracing = { version = "0.1", default-features = false, features = ["release_max_level_info"] }
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "ansi"] }
+axum = { version = "0.7", default-features = false, features = ["tokio", "http1"] }
+etherparse = { version = "0.14", default-features = false, features = ["std"] }
+inotify = { version = "0.10", default-features = false, features = ["stream"] }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+binrw = { version = "0.13", default-features = false, features = ["std"] }
+anyhow = { version = "1.0", default-features = false, features = ["std"] }
+futures-util = { version = "0.3", default-features = false }
+prometheus = { version = "0.13", default-features = false }
+serde_yaml = { version = "0.9", default-features = false }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# by overriding our dependencies' compilation settings, we can further optimize for size
+# https://docs.rust-embedded.org/book/unsorted/speed-vs-size.html#optimizing-dependencies
+[profile.release.package."*"]
+codegen-units = 1
