@@ -45,17 +45,11 @@ routers:
   - { mac: 00:00:00:00:00:01, agent: sw01, interface: 1, label: 1234 }
   - { mac: 00:00:00:00:00:02, agent: sw02, interface: 2, label: 4321 }
 agents:
-  sw01:
-    label: sw01.domain.tld
-    source: fe44::1
-  sw02:
-    label: sw02.domain.tld
-    source: fe44::2
+  sw01: { label: sw01.domain.tld, source: fe44::1 }
+  sw02: { label: sw02.domain.tld, source: fe44::2 }
 ether_types:
-  0x0800:
-    label: IPv4
-  0x86DD:
-    label: IPv6
+  0x0800: { label: IPv4 }
+  0x86DD: { label: IPv6 }
 ```
 
 ### Routers
