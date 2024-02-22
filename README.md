@@ -8,7 +8,7 @@ Prometheus endpoints.
 ```prometheus
 sflow_agent_bytes{agent=<label>,ether_type=<label>} <bytes>
 sflow_agent_drops{agent=<label>} <droped frames, which should have been sampled>
-sflow_router_bytes{agent=<label>,ether_type=<label>,in=<label>,out=<label>} <globaly deduplicated bytes>
+sflow_router_bytes{ether_type=<label>,in=<label>,out=<label>} <globaly deduplicated bytes>
 ```
 
 - sflow_agent_bytes - amount of bytes, a given agent processed
