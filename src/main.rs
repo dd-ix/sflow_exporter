@@ -2,6 +2,7 @@ use std::future::IntoFuture;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 
+use anyhow::anyhow;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::get;
@@ -199,24 +200,52 @@ async fn load_meta(meta_path: &Path, metrics: &Metrics) -> anyhow::Result<Meta> 
 
   for router_in in meta.get_routers() {
     for router_out in meta.get_routers() {
-      for agent in meta.get_agents() {
-        for ether_type in meta.get_ether_types() {
-          metrics.capture_router_bytes(
-            &agent.label,
-            &router_in.label,
-            &router_out.label,
-            ether_type,
-            0,
-          );
-        }
+      if router_in.agent == router_out.agent && router_in.interface == router_out.interface {
+        continue;
+      }
+
+      let agent_in = meta
+        .get_agents()
+        .find(|agent| agent.id == router_in.agent)
+        .ok_or_else(|| {
+          anyhow!(
+            "Router {} is referencing unknown agent {}.",
+            router_in.label,
+            router_in.agent
+          )
+        })?;
+
+      let _ = meta
+        .get_agents()
+        .find(|agent| agent.id == router_out.agent)
+        .ok_or_else(|| {
+          anyhow!(
+            "Router {} is referencing unknown agent {}.",
+            router_out.label,
+            router_out.agent
+          )
+        })?;
+
+      // only agent_in because, before we capture capture_router_bytes we only check input interface
+      // regarding deduplication
+
+      for ether_type in meta.get_ether_types() {
         metrics.capture_router_bytes(
-          &agent.label,
+          &agent_in.label,
           &router_in.label,
           &router_out.label,
-          DEFAULT_ETHER_TYPE,
+          ether_type,
           0,
         );
       }
+
+      metrics.capture_router_bytes(
+        &agent_in.label,
+        &router_in.label,
+        &router_out.label,
+        DEFAULT_ETHER_TYPE,
+        0,
+      );
     }
   }
 
