@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
   let (sflow_addr, metrics_addr) = match args.action {
     Action::Check => {
       Meta::load(&args.meta).await?;
-      info!("Config sucesfully parsed");
+      info!("Config successfully parsed");
       return Ok(());
     }
     Action::Listen {
@@ -173,7 +173,7 @@ async fn process_sflow(
             continue;
           }
 
-          metrics.capture_router_bytes(&agent.label, &src.label, &dst.label, ether_type, bytes);
+          metrics.capture_router_bytes(&src.label, &dst.label, ether_type, bytes);
         }
       }
     }
@@ -204,7 +204,8 @@ async fn load_meta(meta_path: &Path, metrics: &Metrics) -> anyhow::Result<Meta> 
         continue;
       }
 
-      let agent_in = meta
+      // verify, referenced agents are existing
+      let _agent_in = meta
         .get_agents()
         .find(|agent| agent.id == router_in.agent)
         .ok_or_else(|| {
@@ -215,7 +216,7 @@ async fn load_meta(meta_path: &Path, metrics: &Metrics) -> anyhow::Result<Meta> 
           )
         })?;
 
-      let _ = meta
+      let _agent_out = meta
         .get_agents()
         .find(|agent| agent.id == router_out.agent)
         .ok_or_else(|| {
@@ -226,26 +227,11 @@ async fn load_meta(meta_path: &Path, metrics: &Metrics) -> anyhow::Result<Meta> 
           )
         })?;
 
-      // only agent_in because, before we capture capture_router_bytes we only check input interface
-      // regarding deduplication
-
       for ether_type in meta.get_ether_types() {
-        metrics.capture_router_bytes(
-          &agent_in.label,
-          &router_in.label,
-          &router_out.label,
-          ether_type,
-          0,
-        );
+        metrics.capture_router_bytes(&router_in.label, &router_out.label, ether_type, 0);
       }
 
-      metrics.capture_router_bytes(
-        &agent_in.label,
-        &router_in.label,
-        &router_out.label,
-        DEFAULT_ETHER_TYPE,
-        0,
-      );
+      metrics.capture_router_bytes(&router_in.label, &router_out.label, DEFAULT_ETHER_TYPE, 0);
     }
   }
 

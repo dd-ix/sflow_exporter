@@ -10,7 +10,7 @@ impl Metrics {
   pub(super) fn new() -> (Self, Registry) {
     let router_bytes = IntCounterVec::new(
       Opts::new("sflow_router_bytes", "bytes"),
-      &["agent", "in", "out", "ether_type"],
+      &["in", "out", "ether_type"],
     )
     .unwrap();
     let agent_bytes = IntCounterVec::new(
@@ -36,17 +36,10 @@ impl Metrics {
     )
   }
 
-  pub(super) fn capture_router_bytes(
-    &self,
-    agent: &str,
-    r#in: &str,
-    r#out: &str,
-    ether_type: &str,
-    bytes: u64,
-  ) {
+  pub(super) fn capture_router_bytes(&self, r#in: &str, r#out: &str, ether_type: &str, bytes: u64) {
     self
       .router_bytes
-      .with_label_values(&[agent, r#in, r#out, ether_type])
+      .with_label_values(&[r#in, r#out, ether_type])
       .inc_by(bytes);
   }
 
