@@ -2,7 +2,8 @@
 name = "sflow_exporter"
 version = "0.1.0"
 edition = "2021"
-author = "Marcel <https://m4rc3l.de>"
+authors = ["Marcel <https://m4rc3l.de>"]
+description = "Serving sflow traffic metrics as Prometheus endpoints."
 
 [dependencies]
 clap = { version = "4.4", default-features = false, features = ["std", "color", "help", "usage", "error-context", "suggestions", "derive", "env"] }

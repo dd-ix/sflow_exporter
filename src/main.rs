@@ -1,3 +1,7 @@
+use std::future::IntoFuture;
+use std::io::Cursor;
+use std::path::{Path, PathBuf};
+
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::get;
@@ -6,10 +10,7 @@ use clap::Parser;
 use futures_util::stream::StreamExt;
 use inotify::{Inotify, WatchMask};
 use prometheus::{Registry, TextEncoder};
-use std::future::IntoFuture;
-use std::io::Cursor;
-use std::path::PathBuf;
-use tokio::net::{TcpListener, UdpSocket, UnixListener};
+use tokio::net::{TcpListener, UdpSocket};
 use tokio::select;
 use tokio::sync::mpsc;
 use tracing::error;
@@ -17,7 +18,7 @@ use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 use crate::args::{Action, Args};
-use crate::meta::Meta;
+use crate::meta::{Meta, DEFAULT_ETHER_TYPE};
 use crate::metrics::Metrics;
 use crate::sflow::record::{FlowRecord, HeaderProtocol};
 use crate::sflow::sample::Sample;
@@ -115,30 +116,14 @@ async fn process_sflow(
   metrics: Metrics,
 ) -> anyhow::Result<()> {
   let mut buf = datagram_buffer();
-  let mut meta = Meta::load(&meta_path).await?;
-  info!(
-    "Loaded {} routers, {} agents and {} ether types",
-    meta.customer_count(),
-    meta.agent_count(),
-    meta.important_ether_type_count()
-  );
+  let mut meta = load_meta(&meta_path, &metrics).await?;
 
   loop {
     let read = select! {
       _ = meta_update_rx.recv() => {
-        match Meta::load(&meta_path).await {
-          Ok(new_meta) => {
-            meta = new_meta;
-            info!(
-              "Loaded {} routers, {} agents and {} important ether types",
-              meta.customer_count(),
-              meta.agent_count(),
-              meta.important_ether_type_count()
-            );
-          }
-          Err(err) => {
-            error!("Unable to load meta configuration, continuing with running configuration: {:?}", err);
-          }
+        match  load_meta(&meta_path, &metrics).await {
+          Ok(new_meta) => meta = new_meta,
+          Err(err) => error!("Unable to load meta configuration, continuing with running configuration: {:?}", err),
         };
         continue;
       }
@@ -192,6 +177,50 @@ async fn process_sflow(
       }
     }
   }
+}
+
+async fn load_meta(meta_path: &Path, metrics: &Metrics) -> anyhow::Result<Meta> {
+  let meta = Meta::load(meta_path).await?;
+
+  info!(
+    "Loaded {} routers, {} agents and {} ether types",
+    meta.router_count(),
+    meta.agent_count(),
+    meta.important_ether_type_count()
+  );
+
+  for agent in meta.get_agents() {
+    metrics.capture_pagent_drops(&agent.label, 0);
+    for ether_type in meta.get_ether_types() {
+      metrics.capture_agent_bytes(&agent.label, ether_type, 0);
+    }
+    metrics.capture_agent_bytes(&agent.label, DEFAULT_ETHER_TYPE, 0);
+  }
+
+  for router_in in meta.get_routers() {
+    for router_out in meta.get_routers() {
+      for agent in meta.get_agents() {
+        for ether_type in meta.get_ether_types() {
+          metrics.capture_router_bytes(
+            &agent.label,
+            &router_in.label,
+            &router_out.label,
+            ether_type,
+            0,
+          );
+        }
+        metrics.capture_router_bytes(
+          &agent.label,
+          &router_in.label,
+          &router_out.label,
+          DEFAULT_ETHER_TYPE,
+          0,
+        );
+      }
+    }
+  }
+
+  Ok(meta)
 }
 
 async fn metrics_endpoint(State(registry): State<Registry>) -> Result<String, StatusCode> {

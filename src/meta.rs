@@ -1,3 +1,4 @@
+use std::collections::hash_map::Values;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -5,7 +6,7 @@ use serde::Deserialize;
 
 use crate::sflow::IpAddr;
 
-const DEFAULT_ETHER_TYPE: &str = "other";
+pub(super) const DEFAULT_ETHER_TYPE: &str = "other";
 
 pub(super) struct Meta {
   routers: HashMap<[u8; 6], Router>,
@@ -97,7 +98,7 @@ impl Meta {
     })
   }
 
-  pub(super) fn customer_count(&self) -> usize {
+  pub(super) fn router_count(&self) -> usize {
     self.routers.len()
   }
 
@@ -107,6 +108,18 @@ impl Meta {
 
   pub(super) fn important_ether_type_count(&self) -> usize {
     self.ether_types.len()
+  }
+
+  pub(super) fn get_agents(&self) -> Values<IpAddr, Agent> {
+    self.agents.values()
+  }
+
+  pub(super) fn get_routers(&self) -> Values<[u8; 6], Router> {
+    self.routers.values()
+  }
+
+  pub(super) fn get_ether_types(&self) -> Values<'_, u16, String> {
+    self.ether_types.values()
   }
 
   pub(super) fn lookup_router(&self, mac: &[u8; 6]) -> Option<&Router> {
