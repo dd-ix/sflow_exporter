@@ -34,7 +34,7 @@ in
         port = lib.mkOption {
           type = lib.types.port;
           description = lib.mdDoc "The port the metrics listener shuld be listening on.";
-          default = 9100;
+          default = 9144;
         };
       };
     };

@@ -26,7 +26,7 @@ pub(super) enum Action {
     #[clap(
       long,
       env = "SFLOW_EXPORTER_METRICS_LISTEN_ADDR",
-      default_value = "[::]:9100"
+      default_value = "[::]:9144"
     )]
     metrics_addr: SocketAddr,
   },
