@@ -228,8 +228,8 @@ struct RawPacketHeaderDataRaw {
 
 #[derive(BinRead)]
 pub(crate) struct EthernetHeader {
-  pub(crate) src: [u8; 6],
   pub(crate) dst: [u8; 6],
+  pub(crate) src: [u8; 6],
   pub(crate) ether_type: u16,
 }
 

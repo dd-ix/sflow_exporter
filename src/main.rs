@@ -196,8 +196,8 @@ async fn process_sflow(
                 .map(|seg| format!("{:02x}", seg))
                 .collect::<Vec<String>>()
                 .join(":")),
-            flow.output_if_idx,
             flow.input_if_idx,
+            flow.output_if_idx,
             bytes,
             ether_type
           );

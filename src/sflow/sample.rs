@@ -106,11 +106,9 @@ impl BinRead for FlowData {
       sample_rate: raw.sample_rate,
       sample_pool: raw.sample_pool,
       drops: raw.drops,
-      input_if_idx: raw.input_if_idx,
-      output_if_idx: raw.output_if_idx,
-      // input_if_idx: raw.input_if_idx & 0x3FFFFFFF,
+      input_if_idx: raw.input_if_idx & 0x3fffffff,
       // input_if_format: raw.input_if_idx >> 30,
-      // output_if_idx: raw.output_if_idx & 0x3FFFFFFF,
+      output_if_idx: raw.output_if_idx & 0x3fffffff,
       // output_if_format: raw.output_if_idx >> 30,
       // direction: match source_id_idx {
       // idx if idx == raw.output_if_idx => Direction::Egress,
