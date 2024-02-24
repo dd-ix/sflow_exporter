@@ -8,6 +8,8 @@ use clap::{Parser, Subcommand};
 pub(super) struct Args {
   #[clap(long, short, env = "SFLOW_EXPORTER_META", default_value = "meta.yaml")]
   pub(super) meta: PathBuf,
+  #[clap(long, short, env = "SFLOW_EXPORTER_DEBUG", default_value = "false")]
+  pub(super) debug: bool,
   #[clap(subcommand)]
   pub(super) action: Action,
 }

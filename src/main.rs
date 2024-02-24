@@ -96,7 +96,14 @@ async fn main() -> anyhow::Result<()> {
     })
   };
 
-  let handle = tokio::spawn(process_sflow(socket, meta_update_rx, args.meta, metrics));
+  let handle = tokio::spawn(process_sflow(
+    socket,
+    meta_update_rx,
+    args.meta,
+    metrics,
+    args.debug,
+  ));
+
   let axum = axum::serve(listener, router)
     .with_graceful_shutdown(shutdown_signal())
     .into_future();
@@ -115,6 +122,7 @@ async fn process_sflow(
   mut meta_update_rx: mpsc::Receiver<()>,
   meta_path: PathBuf,
   metrics: Metrics,
+  debug: bool,
 ) -> anyhow::Result<()> {
   let mut buf = datagram_buffer();
   let mut meta = load_meta(&meta_path, &metrics).await?;
@@ -167,6 +175,33 @@ async fn process_sflow(
 
         let src = meta.lookup_router(&ethernet_header.src);
         let dst = meta.lookup_router(&ethernet_header.dst);
+
+        if debug {
+          info!(
+            "[{}] {} => {} iface: {: >7} => {: <7}, {: >5} bytes {}",
+            agent.label,
+            src
+              .map(|r| format!("{: >17}", r.label))
+              .unwrap_or_else(|| ethernet_header
+                .src
+                .iter()
+                .map(|seg| format!("{:02x}", seg))
+                .collect::<Vec<String>>()
+                .join(":")),
+            dst
+              .map(|r| format!("{: <17}", r.label))
+              .unwrap_or_else(|| ethernet_header
+                .dst
+                .iter()
+                .map(|seg| format!("{:02x}", seg))
+                .collect::<Vec<String>>()
+                .join(":")),
+            flow.output_if_idx,
+            flow.input_if_idx,
+            bytes,
+            ether_type
+          );
+        }
 
         if let (Some(src), Some(dst)) = (src, dst) {
           if src.agent != agent.id || src.interface != flow.input_if_idx {
