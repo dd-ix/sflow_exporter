@@ -10,8 +10,8 @@ sflow_agent_drops{agent=<label>} <droped frames, which should have been sampled>
 sflow_router_bytes{ether_type=<label>,in=<label>,out=<label>} <globaly deduplicated bytes>
 ```
 
-- sflow_agent_drops - amount of samples that were dropped due to missing resources
-- sflow_router_bytes - amount of bytes that were routed global form in to out
+- sflow_agent_drops - `counter` of samples that were dropped due to missing resources
+- sflow_router_bytes - `counter` of bytes that were transfered between mac addresses
 
 ## Deployment
 
