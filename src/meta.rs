@@ -15,28 +15,23 @@ pub(super) struct Meta {
 }
 
 pub(super) struct Router {
-  pub(super) agent: String,
-  pub(super) interface: u32,
   pub(super) label: String,
 }
 
 pub(super) struct Agent {
-  pub(super) id: String,
   pub(super) label: String,
 }
 
 #[derive(Deserialize)]
 struct MetaStorage {
-  routers: Vec<CustomerStorage>,
-  agents: HashMap<String, AgentStorage>,
+  routers: Vec<RouterStorage>,
+  agents: Vec<AgentStorage>,
   ether_types: HashMap<u16, EtherTypeStorage>,
 }
 
 #[derive(Deserialize)]
-struct CustomerStorage {
+struct RouterStorage {
   mac: String,
-  agent: String,
-  interface: u32,
   label: String,
 }
 
@@ -64,8 +59,6 @@ impl Meta {
           convert_mac(&customer.mac),
           Router {
             label: customer.label,
-            agent: customer.agent,
-            interface: customer.interface,
           },
         )
       })
@@ -74,15 +67,7 @@ impl Meta {
     let agents = meta
       .agents
       .into_iter()
-      .map(|(id, agent)| {
-        (
-          agent.source,
-          Agent {
-            id,
-            label: agent.label,
-          },
-        )
-      })
+      .map(|agent| (agent.source, Agent { label: agent.label }))
       .collect();
 
     let ether_types = meta

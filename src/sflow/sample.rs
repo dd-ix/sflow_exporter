@@ -18,11 +18,11 @@ pub(crate) enum Sample {
 }
 
 pub(crate) struct FlowData {
-  pub(crate) seq_num: u32,
+  // pub(crate) seq_num: u32,
   // pub(crate) source_id_idx: u32,
   // pub(crate) source_id_type: u32,
   pub(crate) sample_rate: u32,
-  pub(crate) sample_pool: u32,
+  // pub(crate) sample_pool: u32,
   pub(crate) drops: u32,
   pub(crate) input_if_idx: u32,
   // pub(crate) input_if_format: u32,
@@ -81,11 +81,11 @@ pub(crate) struct UnknownData {
   data: Vec<u8>,
 }
 
-pub(crate) enum Direction {
-  Ingress,
-  Egress,
-  Unknown,
-}
+// pub(crate) enum Direction {
+//   Ingress,
+//   Egress,
+//   Unknown,
+// }
 
 impl BinRead for FlowData {
   type Args<'a> = ();
@@ -100,11 +100,11 @@ impl BinRead for FlowData {
     // let source_id_idx = raw.source_id & 0x00ffffff;
 
     Ok(Self {
-      seq_num: raw.seq_num,
+      // seq_num: raw.seq_num,
       // source_id_idx,
       // source_id_type: raw.source_id >> 24,
       sample_rate: raw.sample_rate,
-      sample_pool: raw.sample_pool,
+      // sample_pool: raw.sample_pool,
       drops: raw.drops,
       input_if_idx: raw.input_if_idx & 0x3fffffff,
       // input_if_format: raw.input_if_idx >> 30,

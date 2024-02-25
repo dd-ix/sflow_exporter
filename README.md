@@ -6,15 +6,12 @@ Prometheus endpoints.
 ## Exposed Prometheus Metrics
 
 ```prometheus
-sflow_agent_bytes{agent=<label>,ether_type=<label>} <bytes>
 sflow_agent_drops{agent=<label>} <droped frames, which should have been sampled>
 sflow_router_bytes{ether_type=<label>,in=<label>,out=<label>} <globaly deduplicated bytes>
 ```
 
-- sflow_agent_bytes - amount of bytes, a given agent processed
 - sflow_agent_drops - amount of samples that were dropped due to missing resources
-- sflow_router_bytes - amount of bytes that were routet global form in to out, data is deduplicated amount all agents (
-  e.g. a packet take a path over multiple agents)
+- sflow_router_bytes - amount of bytes that were routed global form in to out
 
 ## Deployment
 
@@ -42,11 +39,11 @@ and if that was successful, applies the new configuration.
 ```yaml
 # meta.yaml
 routers:
-  - { mac: 00:00:00:00:00:01, agent: sw01, interface: 1, label: 1234 }
-  - { mac: 00:00:00:00:00:02, agent: sw02, interface: 2, label: 4321 }
+  - { mac: 00:00:00:00:00:01, label: 1234 }
+  - { mac: 00:00:00:00:00:02, label: 4321 }
 agents:
-  sw01: { label: sw01.domain.tld, source: fe44::1 }
-  sw02: { label: sw02.domain.tld, source: fe44::2 }
+  - { label: sw01.domain.tld, source: fe44::1 }
+  - { label: sw02.domain.tld, source: fe44::2 }
 ether_types:
   0x0800: { label: IPv4 }
   0x86DD: { label: IPv6 }
@@ -57,17 +54,13 @@ ether_types:
 The router property describes all entities that are sending and recvieving packages.
 
 - the **mac address** is used to identify who send a packet, and who should recvieve it.
-- the **agent** and **interface** is used to deduplicate global traffic accounting. E.g. a packet is taking a path over
-  multiple switches from source to destination router, therefore the bytes should only be counted once.
 - the **label** the the property is the identification thats passed over to prometheus.
 
 ### Agents
 
-Agents are used to monitor the traffic on a per agent basis and needed to apply global accounting deduplication as
-described in the "Router" section.
+Agents are used to monitor the amount of droped samples. If this number grows to big, try tuning the sample rate.
 
-- the **source** address is the ip address that send the sflow packet to sflow_exporter. It is used to identify the
-  current location of the packet.
+- the **source** address is the ip address that send the sflow packet to sflow_exporter.
 - the **label** the the property is the identification thats passed over to prometheus.
 
 ### Ether Types

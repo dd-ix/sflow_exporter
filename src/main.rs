@@ -2,7 +2,6 @@ use std::future::IntoFuture;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 
-use anyhow::anyhow;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::get;
@@ -171,8 +170,6 @@ async fn process_sflow(
         let bytes = packet_header.frame_length as u64 * flow.sample_rate as u64;
         let ether_type = meta.fmt_ether_type(ethernet_header.ether_type);
 
-        metrics.capture_agent_bytes(&agent.label, ether_type, bytes);
-
         let src = meta.lookup_router(&ethernet_header.src);
         let dst = meta.lookup_router(&ethernet_header.dst);
 
@@ -204,10 +201,6 @@ async fn process_sflow(
         }
 
         if let (Some(src), Some(dst)) = (src, dst) {
-          if src.agent != agent.id || src.interface != flow.input_if_idx {
-            continue;
-          }
-
           metrics.capture_router_bytes(&src.label, &dst.label, ether_type, bytes);
         }
       }
@@ -227,41 +220,10 @@ async fn load_meta(meta_path: &Path, metrics: &Metrics) -> anyhow::Result<Meta> 
 
   for agent in meta.get_agents() {
     metrics.capture_pagent_drops(&agent.label, 0);
-    for ether_type in meta.get_ether_types() {
-      metrics.capture_agent_bytes(&agent.label, ether_type, 0);
-    }
-    metrics.capture_agent_bytes(&agent.label, DEFAULT_ETHER_TYPE, 0);
   }
 
   for router_in in meta.get_routers() {
     for router_out in meta.get_routers() {
-      if router_in.agent == router_out.agent && router_in.interface == router_out.interface {
-        continue;
-      }
-
-      // verify, referenced agents are existing
-      let _agent_in = meta
-        .get_agents()
-        .find(|agent| agent.id == router_in.agent)
-        .ok_or_else(|| {
-          anyhow!(
-            "Router {} is referencing unknown agent {}.",
-            router_in.label,
-            router_in.agent
-          )
-        })?;
-
-      let _agent_out = meta
-        .get_agents()
-        .find(|agent| agent.id == router_out.agent)
-        .ok_or_else(|| {
-          anyhow!(
-            "Router {} is referencing unknown agent {}.",
-            router_out.label,
-            router_out.agent
-          )
-        })?;
-
       for ether_type in meta.get_ether_types() {
         metrics.capture_router_bytes(&router_in.label, &router_out.label, ether_type, 0);
       }
