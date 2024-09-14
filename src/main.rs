@@ -167,6 +167,7 @@ async fn process_sflow(
         };
 
         // first cast, then multiply to prevent overflow (panic!)
+        println!("{} {}", packet_header.frame_length, u32::MAX);
         let bytes = packet_header.frame_length as u64 * flow.sample_rate as u64;
         let ether_type = meta.fmt_ether_type(ethernet_header.ether_type);
 
