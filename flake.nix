@@ -26,7 +26,7 @@
       };
 
       nixosModules = rec {
-        sflow-exporter = import ./module.nix;
+        sflow-exporter = ./module.nix;
         default = sflow-exporter;
       };
     };
