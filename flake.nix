@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -14,15 +14,13 @@
         in
         {
           packages = rec {
-            sflow-exporter = pkgs.callPackage ./derivation.nix {
-              cargoToml = ./Cargo.toml;
-            };
+            sflow-exporter = pkgs.callPackage ./package.nix { };
             default = sflow-exporter;
           };
         }
       ) // {
       overlays.default = _: prev: {
-        sflow-exporter = self.packages."${prev.system}".default;
+        inherit (self.packages."${prev.system}") sflow-exporter;
       };
 
       nixosModules = rec {

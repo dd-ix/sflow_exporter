@@ -6,13 +6,13 @@ ENV USER=sflow_exporter
 ENV UID=10001
 
 RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    "${USER}"
+  --disabled-password \
+  --gecos "" \
+  --home "/nonexistent" \
+  --shell "/sbin/nologin" \
+  --no-create-home \
+  --uid "${UID}" \
+  "${USER}"
 
 RUN cargo new --bin sflow_exporter
 
@@ -22,7 +22,7 @@ COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
 RUN cargo build --release \
- && rm src/*.rs target/release/deps/sflow_exporter*
+  && rm src/*.rs target/release/deps/sflow_exporter*
 
 COPY ./src ./src
 RUN cargo build --release
@@ -38,4 +38,4 @@ COPY --from=builder /sflow_exporter/target/release/sflow_exporter ./sflow_export
 
 USER sflow_exporter:sflow_exporter
 
-CMD ["/sflow_exporter/sflow_exporter"]
+CMD ["/sflow_exporter/sflow_exporter", "listen"]

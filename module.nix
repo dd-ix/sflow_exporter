@@ -11,29 +11,29 @@ in
       defaultText = lib.literalExpression "pkgs.sflow-exporter";
       description = lib.mdDoc "Which sflow_exporzer derivation to use.";
     };
-    enable = lib.mkEnableOption (lib.mdDoc "sflow_exporter");
+    enable = lib.mkEnableOption "sflow_exporter";
     listen = {
       sflow = {
         addr = lib.mkOption {
           type = lib.types.str;
-          description = lib.mdDoc "The ip address the sflow listener shuld be listening on.";
+          description = lib.mdDoc "The ip address the sflow listener should be listening on.";
           default = "::";
         };
         port = lib.mkOption {
           type = lib.types.port;
-          description = lib.mdDoc "The port the sflow listener shuld be listening on.";
+          description = lib.mdDoc "The port the sflow listener should be listening on.";
           default = 6343;
         };
       };
       metrics = {
         addr = lib.mkOption {
           type = lib.types.str;
-          description = lib.mdDoc "The ip address the metrics listener shuld be listening on.";
+          description = lib.mdDoc "The ip address the metrics listener should be listening on.";
           default = "::";
         };
         port = lib.mkOption {
           type = lib.types.port;
-          description = lib.mdDoc "The port the metrics listener shuld be listening on.";
+          description = lib.mdDoc "The port the metrics listener should be listening on.";
           default = 9144;
         };
       };
@@ -54,7 +54,7 @@ in
       after = [ "network.target" ];
 
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/sflow_exporter listen";
+        ExecStart = "${lib.getExe cfg.package} listen";
         DynamicUser = true;
         User = "sflow_exporter";
 
