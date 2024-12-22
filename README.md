@@ -3,21 +3,26 @@
 Serving [sflow](https://sflow.org/)/[RFC3176](https://datatracker.ietf.org/doc/html/rfc3176) traffic metrics as
 Prometheus endpoints.
 
+## Who is using it?
+
+- [MINAP](https://www.minap.it/) - Arista/Debian/Prometheus/Grafana
+- [DD-IX](https://dd-ix.net) - Arista/NixOS/Prometheus/Grafana
+
 ## Exposed Prometheus Metrics
 
 ```prometheus
-sflow_agent_drops{agent=<label>} <droped frames, which should have been sampled>
-sflow_router_bytes{ether_type=<label>,in=<label>,out=<label>} <globaly deduplicated bytes>
+sflow_agent_drops{agent=<label>} <dropped frames, which should have been sampled>
+sflow_router_bytes{ether_type=<label>,in=<label>,out=<label>} <globally deduplicated bytes>
 ```
 
 - sflow_agent_drops - `counter` of samples that were dropped due to missing resources
-- sflow_router_bytes - `counter` of bytes that were transfered between mac addresses
+- sflow_router_bytes - `counter` of bytes that were transferred between mac addresses
 
 ## Deployment
 
 - [Nix Flake](flake.nix)
 - Docker [`ghcr.io/dd-ix/sflow_exporter`](ghcr.io/dd-ix/sflow_exporter)
-- [Binary Releases](https://github.com/MarcelCoding/zia/releases/)
+- [Binary Releases](https://github.com/dd-ix/sflow_exporter/releases/)
 
 ## Configuration
 
@@ -58,7 +63,7 @@ The router property describes all entities that are sending and recvieving packa
 
 ### Agents
 
-Agents are used to monitor the amount of droped samples. If this number grows to big, try tuning the sample rate.
+Agents are used to monitor the amount of dropped samples. If this number grows to big, try tuning the sample rate.
 
 - the **source** address is the ip address that send the sflow packet to sflow_exporter.
 - the **label** the the property is the identification thats passed over to prometheus.
