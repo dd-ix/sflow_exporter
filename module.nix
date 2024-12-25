@@ -5,13 +5,8 @@ let
 in
 {
   options.services.sflow-exporter = {
-    package = lib.mkOption {
-      type = lib.types.package;
-      default = pkgs.sflow-exporter;
-      defaultText = lib.literalExpression "pkgs.sflow-exporter";
-      description = lib.mdDoc "Which sflow_exporzer derivation to use.";
-    };
     enable = lib.mkEnableOption "sflow_exporter";
+    package = lib.mkPackageOption pkgs "sflow-exporter" { };
     listen = {
       sflow = {
         addr = lib.mkOption {
@@ -53,21 +48,20 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
 
+      environment =
+        let
+          addrToString = addr: port: "${if (lib.hasInfix ":" addr) then "[${addr}]" else addr}:${toString port}";
+        in
+        {
+          SFLOW_EXPORTER_SFlOW_LISTEN_ADDR = addrToString cfg.listen.sflow.addr cfg.listen.sflow.port;
+          SFLOW_EXPORTER_METRICS_LISTEN_ADDR = addrToString cfg.listen.metrics.addr cfg.listen.metrics.port;
+          SFLOW_EXPORTER_META = cfg.metaPath;
+        };
+
       serviceConfig = {
         ExecStart = "${lib.getExe cfg.package} listen";
         DynamicUser = true;
         User = "sflow_exporter";
-
-        Environment =
-          let
-            sflowAddr = cfg.listen.sflow.addr;
-            metricsAddr = cfg.listen.metrics.addr;
-          in
-          [
-            "SFLOW_EXPORTER_SFlOW_LISTEN_ADDR=${if (lib.hasInfix ":" sflowAddr) then "[${sflowAddr}]" else sflowAddr}:${toString cfg.listen.sflow.port}"
-            "SFLOW_EXPORTER_METRICS_LISTEN_ADDR=${if (lib.hasInfix ":" metricsAddr) then "[${metricsAddr}]" else metricsAddr}:${toString cfg.listen.metrics.port}"
-            "SFLOW_EXPORTER_META=${cfg.metaPath}"
-          ];
       };
     };
   };
