@@ -80,10 +80,19 @@ async fn main() -> anyhow::Result<()> {
     .into_make_service();
 
   let inotify = {
-    let meta = args.meta.clone();
+    let meta = std::path::absolute(&args.meta)?;
+    let meta_parent = match meta.parent() {
+      Some(parent) => parent.to_path_buf(),
+      None => anyhow::bail!(
+        "Failed to watch for meta file changes. Parent folder could not be deteminated."
+      ),
+    };
+
     tokio::spawn(async move {
       let inotify = Inotify::init()?;
-      inotify.watches().add(meta, WatchMask::CLOSE_WRITE | WatchMask::MOVED_TO)?;
+      inotify
+        .watches()
+        .add(meta_parent, WatchMask::CLOSE_WRITE | WatchMask::MOVED_TO)?;
       let mut buf = [0; 1024];
       let mut stream = inotify.into_event_stream(&mut buf)?;
 
