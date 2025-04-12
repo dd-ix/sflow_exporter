@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::future::IntoFuture;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
@@ -81,6 +82,12 @@ async fn main() -> anyhow::Result<()> {
 
   let inotify = {
     let meta = std::path::absolute(&args.meta)?;
+    let meta_name: OsString = match meta.file_name() {
+      Some(parent) => parent.into(),
+      None => {
+        anyhow::bail!("Failed to watch for meta file changes. Filename could not be deteminated.")
+      }
+    };
     let meta_parent = match meta.parent() {
       Some(parent) => parent.to_path_buf(),
       None => anyhow::bail!(
@@ -96,7 +103,15 @@ async fn main() -> anyhow::Result<()> {
       let mut buf = [0; 1024];
       let mut stream = inotify.into_event_stream(&mut buf)?;
 
-      while stream.next().await.transpose()?.is_some() {
+      while let Some(event) = stream.next().await.transpose()? {
+        let name = match event.name {
+          Some(name) => name,
+          None => continue,
+        };
+
+        if name != meta_name {
+          continue;
+        }
         meta_update_tx.send(()).await.unwrap()
       }
 
