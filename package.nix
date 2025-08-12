@@ -7,7 +7,11 @@ rustPlatform.buildRustPackage rec {
   pname = manifest.name;
   inherit (manifest) version;
 
-  src = lib.cleanSource ./.;
+  src = lib.sourceFilesBySuffices ./. [
+    ".rs"
+    ".toml"
+    ".lock"
+  ];
   cargoLock.lockFile = ./Cargo.lock;
 
   cargoBuildFlags = "-p ${pname}";
