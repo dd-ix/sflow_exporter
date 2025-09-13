@@ -49,7 +49,7 @@ struct EtherTypeStorage {
 impl Meta {
   pub(super) async fn load(path: &Path) -> anyhow::Result<Self> {
     let raw_meta = tokio::fs::read_to_string(path).await?;
-    let meta = serde_yaml::from_str::<MetaStorage>(&raw_meta)?;
+    let meta = serde_yaml_ng::from_str::<MetaStorage>(&raw_meta)?;
 
     let routers = meta
       .routers

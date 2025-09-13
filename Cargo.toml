@@ -17,7 +17,7 @@ binrw = { version = "0.15", default-features = false, features = ["std"] }
 anyhow = { version = "1.0", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", default-features = false }
 prometheus = { version = "0.14", default-features = false }
-serde_yaml = { version = "0.9", default-features = false }
+serde_yaml_ng = { version = "0.10", default-features = false }
 
 [profile.release]
 lto = true
