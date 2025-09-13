@@ -95,11 +95,11 @@ impl Meta {
     self.ether_types.len()
   }
 
-  pub(super) fn get_agents(&self) -> Values<IpAddr, Agent> {
+  pub(super) fn get_agents(&self) -> Values<'_, IpAddr, Agent> {
     self.agents.values()
   }
 
-  pub(super) fn get_routers(&self) -> Values<[u8; 6], Router> {
+  pub(super) fn get_routers(&self) -> Values<'_, [u8; 6], Router> {
     self.routers.values()
   }
 
