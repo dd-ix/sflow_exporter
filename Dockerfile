@@ -1,6 +1,9 @@
-FROM rust:slim-bookworm AS builder
+FROM rust:slim-trixie AS builder
 
-RUN update-ca-certificates
+RUN update-ca-certificates \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends adduser \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV USER=sflow_exporter
 ENV UID=10001
@@ -27,7 +30,7 @@ RUN cargo build --release \
 COPY ./src ./src
 RUN cargo build --release
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
