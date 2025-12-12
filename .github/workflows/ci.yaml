@@ -47,7 +47,7 @@ jobs:
         run: |
           mv target/${{ matrix.target }}/release/sflow_exporter sflow_exporter_${{ matrix.target }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: sflow_exporter_${{ matrix.target }}
           path: sflow_exporter_${{ matrix.target }}
