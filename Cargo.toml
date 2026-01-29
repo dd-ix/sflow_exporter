@@ -7,7 +7,7 @@ description = "Serving sflow traffic metrics as Prometheus endpoints."
 
 [dependencies]
 clap = { version = "4.5", default-features = false, features = ["std", "color", "help", "usage", "error-context", "suggestions", "derive", "env"] }
-tokio = { version = "1.47", default-features = false, features = ["macros", "rt-multi-thread", "net", "signal", "fs", "sync"] }
+tokio = { version = "1.49", default-features = false, features = ["macros", "rt-multi-thread", "net", "signal", "fs", "sync"] }
 tracing = { version = "0.1", default-features = false, features = ["release_max_level_info"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "ansi"] }
 axum = { version = "0.8", default-features = false, features = ["tokio", "http1"] }
